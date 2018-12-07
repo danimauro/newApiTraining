@@ -24,17 +24,13 @@ module.exports = (sequelize, DataTypes) => {
 
   }, {});
   Dependencia.associate = function(models) {
+    
     	Dependencia.belongsToMany(models.Organizacion, {
             through: 'Orgadep',
             as: 'depOrga',
             foreignKey: 'depId',
         });
 
-        Dependencia.belongsToMany(models.Evento, {
-            through: 'Depevento',
-            as: 'depEvento',
-            foreignKey: 'depId',
-        });
   };
   return Dependencia;
 };

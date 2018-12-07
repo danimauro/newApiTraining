@@ -9,9 +9,89 @@ app.use(fileUpload());
 
 // Importar el modelo Organizacion
 const Dependencia = require('../models').Dependencia;
+const Organizacion = require('../models').Organizacion;
+const Orgadep = require('../models').Orgadep;
 
 //middelewares
 const { verificaToken } = require('../middlewares/autentication');
+
+
+
+/* ======================= 
+* Asignar dependencias a una organización
+==========================*/
+
+app.post('/add-dep-organi', [verificaToken],  async (req, res) => {
+
+    try{
+
+        //Se toman los datos por medio del POST
+        let body = req.body;
+
+        const OrgadepDB = await Orgadep.create({
+
+            orgaId: body.orgaId,
+            depId: body.depId,
+            fecregistro: new Date(),
+            estado: true
+
+        });
+
+        if(OrgadepDB){
+
+            return res.status(200).json({
+                ok: true,
+                message: 'Dependencia asignada correctamente'
+            });
+
+        }
+
+    }catch(e){
+
+        return res.status(500).json({
+            ok: false,
+            message: e
+        });
+    }
+
+});
+
+
+/* ======================= 
+* Get dependencias de una organizacion
+==========================*/
+
+app.get('/dependencias/:ordaId', async (req, res) => {
+
+    try{
+
+        const organiDB = await Dependencia.findAll({
+            include:[{ 
+                model: Organizacion,
+                as: 'depOrga',
+                attributes: ['cod','nombre', 'descrip', 'imagen'],
+                through: { attributes: { exclude: ['fecregistro', 'estado', 'createdAt', 'updatedAt', 'depId', 'orgaId'] } },
+                where: { cod: req.params.ordaId, estado: true }
+            }],
+            attributes: ['cod', 'nombre', 'descrip', 'imagen']
+        });
+
+        return res.status(200).json({
+            ok: true,
+            organiDB
+        });
+
+
+    }catch(e){
+
+        return res.status(500).json({
+            ok: false,
+            message: e
+        });
+
+    }
+
+});
 
 
 /*==============

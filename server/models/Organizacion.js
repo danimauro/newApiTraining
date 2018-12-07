@@ -43,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
 
         Organizacion.belongsToMany(models.Dependencia, {
             through: 'Orgadep',
-            as: 'orgaDep',
+            as: 'organiDep',
             foreignKey: 'orgaId',
         });
 

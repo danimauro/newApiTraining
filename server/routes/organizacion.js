@@ -56,6 +56,7 @@ app.get('/organizaciones',  async (req, res) => {
 
 });
 
+
 /*==============
 * Registrar organización
 ================*/
