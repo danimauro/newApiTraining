@@ -8,7 +8,7 @@ module.exports = {
       cod: {
         allowNull: false,
         primaryKey: true,
-        type: Sequelize.UUID,
+        Sequelize.UUID
         defaultValue: uuid()
       },
 
@@ -23,6 +23,10 @@ module.exports = {
 
       descrip: {
         type: Sequelize.STRING
+      },
+
+      orgaId: {
+        type: Sequelize.UUID
       },
 
       createdAt: {

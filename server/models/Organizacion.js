@@ -41,11 +41,8 @@ module.exports = (sequelize, DataTypes) => {
 
     Organizacion.associate = function(models) {
 
-        Organizacion.belongsToMany(models.Dependencia, {
-            through: 'Orgadep',
-            as: 'orgaDep',
-            foreignKey: 'orgaId',
-        });
+        Organizacion.belongsTo(models.Dependencia);
+        //, { foreignKey: 'orgaId' }
 
     };
     return Organizacion;
