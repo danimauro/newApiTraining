@@ -1,14 +1,7 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-
-//default options
-app.use(fileUpload());
-
-// Importar el modelo Organizacion
-const Organizacion = require('../models').Organizacion;
 
 //middelewares
 const { verificaToken } = require('../middlewares/autentication');
@@ -23,7 +16,7 @@ app.get('/organizaciones',  async (req, res) => {
     
     try{
 
-        const organiDB = await Organizacion.findAll({
+        const organiDB = await require('../models').Organizacion.findAll({
             attributes: ['cod', 'nombre', 'descrip', 'imagen', 'email', 'tel'],
             where: { estado: true }
         });
@@ -68,6 +61,7 @@ app.post('/organizacion', [verificaToken], async (req, res) => {
         //Se toman los datos por medio del POST
         let body = req.body;
 
+
         if(!req.files){
             return res.status(400).json({
                 ok:false,
@@ -108,7 +102,7 @@ app.post('/organizacion', [verificaToken], async (req, res) => {
         }
         
         // Continua para guardar la  organización
-        const organi = await Organizacion.create({
+        const organi = await require('../models').Organizacion.create({
 
             nombre: body.nombre.trim(),
             descrip: body.descrip.trim(),
@@ -128,7 +122,7 @@ app.post('/organizacion', [verificaToken], async (req, res) => {
 
     } catch(e){
 
-        return res.status(400).json({
+        return res.status(500).json({
             ok: false,
             message: e
         });
@@ -144,7 +138,7 @@ app.get('/organizacion/:cod',  async (req, res) => {
 
     try {
 
-        const organiDB = await Organizacion.findAll({
+        const organiDB = await require('../models').Organizacion.findAll({
 
             attributes: ['cod', 'nombre', 'descrip', 'imagen', 'email', 'tel'],
             where: { cod: req.params.cod, estado: true }
@@ -189,7 +183,7 @@ app.put('/organizacion/:cod', [verificaToken], async (req, res) => {
 
         let body = req.body;
 
-        const organiDB = await Organizacion.findOne({
+        const organiDB = await require('../models').Organizacion.findOne({
             where: { cod: req.params.cod }
         });
 
@@ -204,7 +198,7 @@ app.put('/organizacion/:cod', [verificaToken], async (req, res) => {
             
         if(!req.files){
 
-            organiDB.update({
+            await organiDB.update({
                 nombre: body.nombre.trim(),
                 descrip: body.descrip.trim()
             });
@@ -249,7 +243,7 @@ app.put('/organizacion/:cod', [verificaToken], async (req, res) => {
                     fs.unlinkSync(pathImagen)
                 }
 
-                organiDB.update({
+                await organiDB.update({
 
                     nombre: body.nombre.trim(),
                     descrip: body.descrip.trim(),
@@ -268,7 +262,11 @@ app.put('/organizacion/:cod', [verificaToken], async (req, res) => {
             }
 
     } catch(e){
-        console.log(e);
+
+        return res.status(500).json({
+            ok: true,
+            message: e
+        });
     }
         
 });

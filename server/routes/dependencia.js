@@ -1,16 +1,8 @@
 const express = require('express');
-const fileUpload = require('express-fileupload');
 const fs = require('fs');
 const path = require('path');
 const app = express();
 
-//default options
-app.use(fileUpload());
-
-// Importar el modelo Organizacion
-const Dependencia = require('../models').Dependencia;
-const Organizacion = require('../models').Organizacion;
-const Orgadep = require('../models').Orgadep;
 
 //middelewares
 const { verificaToken } = require('../middlewares/autentication');
@@ -28,7 +20,7 @@ app.post('/add-dep-organi', [verificaToken],  async (req, res) => {
         //Se toman los datos por medio del POST
         let body = req.body;
 
-        const OrgadepDB = await Orgadep.create({
+        const OrgadepDB = await require('../models').Orgadep.create({
 
             orgaId: body.orgaId,
             depId: body.depId,
@@ -65,15 +57,21 @@ app.get('/dependencias/:ordaId', async (req, res) => {
 
     try{
 
-        const organiDB = await Dependencia.findAll({
+        const organiDB = await require('../models').Organizacion.findAll({
+            // Se agrega a la consulta la tabla Dependencias y Orgadeps
             include:[{ 
-                model: Organizacion,
-                as: 'depOrga',
-                attributes: ['cod','nombre', 'descrip', 'imagen'],
-                through: { attributes: { exclude: ['fecregistro', 'estado', 'createdAt', 'updatedAt', 'depId', 'orgaId'] } },
-                where: { cod: req.params.ordaId, estado: true }
+                model: require('../models').Dependencia,
+                as: 'organiDep',
+                attributes: ['cod', 'nombre', 'descrip', 'imagen'],                
+                through: { 
+                    attributes: { exclude: ['fecregistro', 'estado', 'createdAt', 'updatedAt', 'depId', 'orgaId'] },
+                    where: { estado: true } 
+                }
+                
             }],
-            attributes: ['cod', 'nombre', 'descrip', 'imagen']
+            attributes: ['cod','nombre', 'descrip', 'imagen'],
+            where: { cod: req.params.ordaId, estado: true }
+            
         });
 
         return res.status(200).json({
@@ -94,8 +92,38 @@ app.get('/dependencias/:ordaId', async (req, res) => {
 });
 
 
+/* ======================= 
+* Get dependencias
+==========================*/
+
+app.get('/dependencias', [verificaToken], async (req, res) => {
+
+    try{
+
+        const dependenciaDB = await require('../models').Dependencia.findAll({
+            attributes: ['cod', 'nombre', 'descrip', 'imagen']
+        });
+
+        return res.status(200).json({
+            ok: true,
+            dependenciaDB
+        });
+
+
+    }catch(e){
+
+        return res.status(500).json({
+            ok: false,
+            message: e
+        });
+
+    }
+
+});
+
+
 /*==============
-* Traer Organizaciones
+* Registrar dependencias
 ================*/
 
 app.post('/dependencia', [verificaToken], async (req, res) => {
@@ -145,7 +173,7 @@ app.post('/dependencia', [verificaToken], async (req, res) => {
 
         }
 
-        const dependenciaDB = await Dependencia.create({
+        const dependenciaDB = await require('../models').Dependencia.create({
 
            nombre: body.nombre.trim(),
            descrip: body.descrip.trim(),

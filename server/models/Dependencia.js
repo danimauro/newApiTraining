@@ -31,6 +31,12 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'depId',
         });
 
+        Dependencia.belongsToMany(models.Evento, {
+            through: 'Depevento',
+            as: 'depEvento',
+            foreignKey: 'depId',
+        });
+
   };
   return Dependencia;
 };

@@ -2,12 +2,16 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
 
 //Variables de entorno o configuraciones globales
 require('./config/global-configuration');
 
 //habilitar la carpeta public para que se pueda acceder externamente
 app.use(express.static(path.resolve(__dirname, '../public')));
+
+//default options
+app.use(fileUpload());
 
 
 //parse aplication /x-www-form-urlencoded

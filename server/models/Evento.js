@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
     const Evento = sequelize.define('Evento', {
-        codigo: {
+        cod: {
             allowNull: false,
             primaryKey: true,
             type: DataTypes.UUID,
@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DATE,
             allowNull: false
         },
-        fecifin: {
+        fecfin: {
             type: DataTypes.DATE,
             allowNull: false
         },
@@ -28,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
     }, {});
     Evento.associate = function(models) {
 
-        Evento.belongsTo(models.Invitado);
+        Evento.belongsTo(models.Invitado, { foreignKey: 'invitadoId' });
 
         Evento.belongsToMany(models.Dependencia, {
             through: 'Depevento',

@@ -57,7 +57,7 @@ app.put('/active-usuario', async (req, res) => {
         });
 
         //se valida que se encuentre un usuario con los datos ingresados por el usuario
-        if (!usuarioDB) {
+        if (! usuarioDB ) {
             return res.status(403).json({
                 ok: false,
                 message: 'No se encontro el usuario con los datos ingresados'

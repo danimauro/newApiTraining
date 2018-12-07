@@ -20,11 +20,11 @@ module.exports = {
                 type: Sequelize.STRING
             },
             fecinicio: {
-                type: Sequelize.DATE,
+                type: Sequelize.DATEONLY,
                 allowNull: false
             },
             fecfin: {
-                type: Sequelize.DATE,
+                type: Sequelize.DATEONLY,
                 allowNull: false
             },
             estado: {
