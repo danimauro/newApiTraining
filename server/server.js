@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 
 //Variables de entorno o configuraciones globales
-require('./config/global-configuration');
+require('./config/private-configuration');
 
 //habilitar la carpeta public para que se pueda acceder externamente
 app.use(express.static(path.resolve(__dirname, '../public')));
