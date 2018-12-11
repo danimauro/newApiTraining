@@ -3,12 +3,10 @@
 // ============================
 process.env.PORT = process.env.PORT || 3000;
 process.env.ROUTE_IMG_ORGANIZACIONES = 'http://localhost:3000/uploads/organizaciones/';
+process.env.ROUTE_IMG_DEPENDENCIAS = 'http://localhost:3000/uploads/dependencias/';
+process.env.ROUTE_IMG_EVENTOS = 'http://localhost:3000/uploads/eventos/';
+process.env.ROUTE_IMG_INVITADOS = 'http://localhost:3000/uploads/invitados/';
 
-
-// ============================
-//  Entorno
-// ============================
-//process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 
 // ============================
 //  Vencimiento del token
@@ -18,7 +16,7 @@ process.env.ROUTE_IMG_ORGANIZACIONES = 'http://localhost:3000/uploads/organizaci
 // 24 horas
 // 30 dias
 
-process.env.CADUCIDAD_TOKEN = '24h';
+process.env.CADUCIDAD_TOKEN = '12h';
 
 
 // ============================

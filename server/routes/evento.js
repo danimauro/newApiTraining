@@ -74,6 +74,20 @@ app.get('/eventos-dep/:depId', async (req, res) => {
             
         });
 
+        // Se le agrega la ruta 
+        if(eventosDepDB.length > 0){
+
+            eventosDepDB[0].imagen = `${ process.env.ROUTE_IMG_DEPENDENCIAS }${ eventosDepDB[0].imagen }`
+
+            //Se configura el path de la imagen agregando el ubicación en el servidor antes de ser enviado al frontEnd
+            for (let i = 0; i < eventosDepDB[0].depEvento.length; i++) {
+
+                eventosDepDB[0].depEvento[i].imagen = `${ process.env.ROUTE_IMG_EVENTOS }${ eventosDepDB[0].depEvento[i].imagen }`
+
+            }
+
+        }
+
         return res.status(200).json({
             ok: true,
             eventosDepDB
@@ -304,6 +318,19 @@ app.get('/eventos', [verificaToken],  async (req, res) => {
             where: { estado: true }
         });
 
+        // Se le agrega la ruta 
+        if(eventosDB.length > 0){
+
+            //Se configura el path de la imagen agregando el ubicación en el servidor antes de ser enviado al frontEnd
+            for (let i = 0; i < eventosDB.length; i++) {
+
+                eventosDB[i].imagen = `${ process.env.ROUTE_IMG_EVENTOS }${ eventosDB[i].imagen }`;
+                eventosDB[i].Invitado.imagen = `${ process.env.ROUTE_IMG_INVITADOS }${ eventosDB[i].Invitado.imagen }`;
+
+            }
+
+        }
+
         return res.status(200).json({
             ok:true,
             eventosDB
@@ -338,6 +365,13 @@ app.get('/evento/:cod',  async (req, res) => {
             attributes: ['cod', 'nombre', 'descrip', 'imagen', 'fecinicio', 'fecfin', 'estado'],
             where: { cod: req.params.cod, estado: true }
         });
+
+        if(eventoDB){
+
+            eventoDB[0].imagen = `${ process.env.ROUTE_IMG_EVENTOS }${ eventoDB[0].imagen }`;
+            eventoDB[0].Invitado.imagen = `${ process.env.ROUTE_IMG_INVITADOS }${ eventoDB[0].Invitado.imagen }`;
+
+        }
 
         return res.status(200).json({
             ok:true,

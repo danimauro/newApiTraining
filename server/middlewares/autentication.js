@@ -12,6 +12,13 @@ let verificaToken = async (req, res, next) => {
         //leer headers de peticion
         let token = req.get('token');
 
+        if(!token){
+            return res.status(401).json({
+                ok: false,  
+                message: 'El token es obligatorio.'
+            });
+        }
+
         //se verifica el token
         await jwt.verify(token, process.env.SEED, (err, decoded) => {
             

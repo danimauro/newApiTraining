@@ -74,6 +74,20 @@ app.get('/dependencias/:ordaId', async (req, res) => {
             
         });
 
+        // Se le agrega la ruta 
+        if(organiDB.length > 0){
+
+            organiDB[0].imagen = `${ process.env.ROUTE_IMG_ORGANIZACIONES }${ organiDB[0].imagen }`
+
+            //Se configura el path de la imagen agregando el ubicación en el servidor antes de ser enviado al frontEnd
+            for (let i = 0; i < organiDB[0].organiDep.length; i++) {
+
+                organiDB[0].organiDep[i].imagen = `${ process.env.ROUTE_IMG_DEPENDENCIAS }${ organiDB[0].organiDep[i].imagen }`
+
+            }
+
+        }
+
         return res.status(200).json({
             ok: true,
             organiDB
@@ -104,6 +118,18 @@ app.get('/dependencias', [verificaToken], async (req, res) => {
             attributes: ['cod', 'nombre', 'descrip', 'imagen']
         });
 
+        // Se le agrega la ruta 
+        if(dependenciaDB.length > 0){
+
+            //Se configura el path de la imagen agregando el ubicación en el servidor antes de ser enviado al frontEnd
+            for (let i = 0; i < dependenciaDB.length; i++) {
+
+                dependenciaDB[i].imagen = `${ process.env.ROUTE_IMG_DEPENDENCIAS }${ dependenciaDB[i].imagen }`
+
+            }
+
+        }
+
         return res.status(200).json({
             ok: true,
             dependenciaDB
@@ -120,6 +146,50 @@ app.get('/dependencias', [verificaToken], async (req, res) => {
     }
 
 });
+
+
+/* ======================= 
+* Get traer una dependencia por codigo
+==========================*/
+
+app.get('/dependencia/:cod', [verificaToken], async (req, res) => {
+
+    try{
+
+        const dependenciaDB = await require('../models').Dependencia.findAll({
+            attributes: ['cod', 'nombre', 'descrip', 'imagen'],
+            where: { cod: req.params.cod }
+        });
+
+        // Se le agrega la ruta 
+        if(dependenciaDB.length > 0){
+
+            //Se configura el path de la imagen agregando el ubicación en el servidor antes de ser enviado al frontEnd
+            for (let i = 0; i < dependenciaDB.length; i++) {
+
+                dependenciaDB[i].imagen = `${ process.env.ROUTE_IMG_DEPENDENCIAS }${ dependenciaDB[i].imagen }`
+
+            }
+
+        }
+
+        return res.status(200).json({
+            ok: true,
+            dependenciaDB
+        });
+
+
+    }catch(e){
+
+        return res.status(500).json({
+            ok: false,
+            message: e
+        });
+
+    }
+
+});
+
 
 
 /*==============

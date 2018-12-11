@@ -18,8 +18,8 @@ app.get('/usuarios/:cod', [verificaToken], async (req, res) => {
     try {
 
         const usuarioDB = await Usuario.findAll({          
-            attributes: ['cod', 'identidad', 'nombre', 'apellido', 'tel', 'sexo', 'email', 'estado'],
-            where: { codigo: req.params.cod }
+            attributes: ['cod', 'identidad', 'nombre', 'apellido', 'tel', 'email', 'estado'],
+            where: { cod: req.params.cod }
         });
 
         return res.status(200).json({
