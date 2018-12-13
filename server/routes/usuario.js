@@ -102,9 +102,7 @@ app.put('/active-usuario', async (req, res) => {
 * Ruta pera provar direccionamiento de api en producción
 =================*/
 
-app.get('/api/test', (req, res) => {
-
-    console.log('entra test');
+app.get('/test', (req, res) => {
 
     return res.status(200).json({
         ok:true,

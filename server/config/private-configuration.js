@@ -13,13 +13,13 @@ process.env.PORT = process.env.PORT || 3001;
 // Estado de la aplicacion
 // ============================
 
-process.env.NODE_ENV = "test";
+process.env.NODE_ENV = "development";
 
 // ============================
 //  Vencimiento del token
 // ============================
 
-process.env.CADUCIDAD_TOKEN = '4h';
+process.env.CADUCIDAD_TOKEN = '24h';
 
 // ============================
 //  SEED de autenticacion
