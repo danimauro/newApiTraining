@@ -3,4 +3,6 @@
 /public/uploads/eventos/
 /public/uploads/invitados/
 /public/uploads/organizaciones/
-/server/config/
+/server/config/config.json
+/server/config/private-configuration.json
+
