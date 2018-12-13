@@ -1,7 +1,7 @@
-process.env.ROUTE_IMG_ORGANIZACIONES = 'http://localhost:3000/uploads/organizaciones/';
-process.env.ROUTE_IMG_DEPENDENCIAS = 'http://localhost:3000/uploads/dependencias/';
-process.env.ROUTE_IMG_EVENTOS = 'http://localhost:3000/uploads/eventos/';
-process.env.ROUTE_IMG_INVITADOS = 'http://localhost:3000/uploads/invitados/';
+process.env.ROUTE_IMG_ORGANIZACIONES = 'http://162.255.160.171/api/uploads/organizaciones/';
+process.env.ROUTE_IMG_DEPENDENCIAS = 'http://162.255.160.171/api/uploads/dependencias/';
+process.env.ROUTE_IMG_EVENTOS = 'http://162.255.160.171/api/uploads/eventos/';
+process.env.ROUTE_IMG_INVITADOS = 'http://162.255.160.171/api/uploads/invitados/';
 
 // ============================
 //  Puerto
