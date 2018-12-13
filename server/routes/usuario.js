@@ -98,4 +98,18 @@ app.put('/active-usuario', async (req, res) => {
 
 });
 
+
+/*===============
+* Ruta pera provar direccionamiento de api en producción
+=================*/
+
+app.get('/test', (req, res) => {
+    
+    return res.status(200).json({
+        ok:true,
+        message: 'test ok'
+    });
+
+});
+
 module.exports = app;
