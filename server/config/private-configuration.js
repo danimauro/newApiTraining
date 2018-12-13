@@ -25,4 +25,4 @@ process.env.CADUCIDAD_TOKEN = '24h';
 //  SEED de autenticacion
 // ============================
 
-process.env.SEED = process.env.SEED || 'este_seed_production_2019';
+process.env.SEED = process.env.SEED || 'este_seed_de_desarrollo';

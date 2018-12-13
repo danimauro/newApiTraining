@@ -106,7 +106,7 @@ app.get('/test', (req, res) => {
 
     return res.status(200).json({
         ok:true,
-        message: 'test ok'
+        message: 'test corriendo ok'
     });
 
 });
