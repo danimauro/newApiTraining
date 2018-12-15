@@ -16,7 +16,17 @@ module.exports = {
             descrip: {
                 type: Sequelize.STRING
             },
+            contenido: {
+                type: Sequelize.STRING,
+                allowNull: false
+            },
             imagen: {
+                type: Sequelize.STRING
+            },
+            costo: {
+                type: Sequelize.STRING
+            },
+            folleto: {
                 type: Sequelize.STRING
             },
             fecinicio: {

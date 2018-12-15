@@ -12,7 +12,13 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false
         },
         descrip: DataTypes.STRING,
+        contenido: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
         imagen: DataTypes.STRING,
+        costo: DataTypes.STRING,
+        folleto: DataTypes.STRING,
         fecinicio: {
             type: DataTypes.DATE,
             allowNull: false
