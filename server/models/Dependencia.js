@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
 
         descrip: {
             type: DataTypes.STRING
+        },
+
+        estado: {
+            type: DataTypes.BOOLEAN
         }
 
   }, {});

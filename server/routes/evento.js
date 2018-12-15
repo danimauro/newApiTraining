@@ -1,10 +1,14 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const app = express();
 
 //middelewares
 const { verificaToken } = require('../middlewares/autentication');
+
+// Funciones de uso general para el manejo de archivos
+const { getNomArhivoAndExtension,
+        validarExtension,
+        moverArchivo,
+        borrarArchivo } = require('../general-functions/managment-files.js');
 
 /* ======================= 
 * Asignar eventos a una dependencia
@@ -44,7 +48,6 @@ app.post('/add-evento-depen', [verificaToken],  async (req, res) => {
     }
 
 });
-
 
 /* ======================= 
 * Get eventos de una dependencia
@@ -103,7 +106,6 @@ app.get('/eventos-dep/:depId', async (req, res) => {
 
 });
 
-
 /* ======================= 
 * Registrar eventos
 ==========================*/
@@ -136,31 +138,68 @@ app.post('/evento', [verificaToken],  async (req, res) => {
 
         //archivo físico
         let imagen = req.files.imagen;
+        let folleto = req.files.folleto;
 
-        const nomImagenExt = await getNomArhivoAndExtension(imagen);
+        if(req.files.imagen && req.files.folleto){
 
-        // Se validan las extensiones de los archivos
-        await validarExtension(extensionesValidasImagen, nomImagenExt.ext, res);
+            const nomImagenExt = await getNomArhivoAndExtension(imagen);
+            const nomFolletoExt = await getNomArhivoAndExtension(folleto);
 
-        //Se envian las imanges a las rutas correspondientes de las carpetas en el servidor
-        await moverArchivo(imagen, nomImagenExt.nombre, res, 'eventos');
+            // Se validan las extensiones de los archivos
+            let resExtImg = await validarExtension(extensionesValidasImagen, nomImagenExt.ext);
+            let resExtFolleto = await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext);
 
-        const eventoDB = await require('../models').Evento.create({
+            // Si la respuesta no es true se sale del sistema informando las extensiones válidas
+            if(resExtImg !== true){
 
-            nombre: body.nombre.trim(),
-            descrip: body.descrip.trim(),
-            imagen: nomImagenExt.nombre.trim(),
-            fecinicio: body.fecinicio,
-            fecfin: body.fecfin,
-            invitadoId: body.invitadoId,
-            contenido: body.contenido.trim(),
-            costo: body.costo.trim(),            
-            estado: true
+                return res.status(400).json({
+                    ok: false,
+                    message: resExtImg
+                });
+            
+            }else if(resExtFolleto !== true){
 
-        });
-        
+                return res.status(400).json({
+                    ok: false,
+                    message: resExtFolleto
+                });
+            
+            }
+
+            //Se envian las imanges a las rutas correspondientes de las carpetas en el servidor
+            let resImg = await moverArchivo(imagen, nomImagenExt.nombre, 'eventos');
+            let resfolleto = await moverArchivo(folleto, nomFolletoExt.nombre, 'folletos');
+
+            // retorna true cuando logra mover la imagen a la carpeta 'eventos' del servidor y false cuando se presenta un error
+            if(resImg == false){
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error al guardar la imágen, favor comunicarse con el administrador'
+                }); 
+            } else if(resfolleto == false){
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error al guardar el folleto, favor comunicarse con el administrador'
+                }); 
+            }
+
+            const eventoDB = await require('../models').Evento.create({
+
+                nombre: body.nombre.trim(),
+                descrip: body.descrip.trim(),
+                imagen: nomImagenExt.nombre.trim(),
+                fecinicio: body.fecinicio,
+                fecfin: body.fecfin,
+                invitadoId: body.invitadoId,
+                folleto: nomFolletoExt.nombre.trim(),
+                contenido: body.contenido.trim(),
+                costo: body.costo.trim(),            
+                estado: true
+
+            });
+
         // Si el usuario envia el folleto
-        if(req.files.folleto){
+        }else if(req.files.folleto){
 
         	//archivo físico
         	let folleto = req.files.folleto;
@@ -169,14 +208,38 @@ app.post('/evento', [verificaToken],  async (req, res) => {
         	const nomFolletoExt = await getNomArhivoAndExtension(folleto);
 
         	//Se valida que la extension sea correcta
-        	await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext, res);
+        	let resExt = await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext);
+        
+            if(resExt !== true){
+                return res.status(400).json({
+                    ok: false,
+                    message: resExt
+                });
+            }
 
         	//Se envian las imanges a las rutas correspondientes de las carpetas en el servidor
-        	await moverArchivo(folleto, nomFolletoExt.nombre, res, 'folletos');
+        	let resArchivo = await moverArchivo(folleto, nomFolletoExt.nombre, 'folletos');
+
+            // retorna true cuando logra mover la imagen a la carpeta 'eventos' del servidor y false cuando se presenta un error
+            if(resArchivo == false){
+
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error al guardar el folleto, favor comunicarse con el administrador'
+                }); 
+            }
 
             await eventoDB.update({
                 
-                folleto: nomFolletoExt.nombre.trim()
+                nombre: body.nombre.trim(),
+                descrip: body.descrip.trim(),
+                fecinicio: body.fecinicio,
+                fecfin: body.fecfin,
+                invitadoId: body.invitadoId,
+                folleto: nomFolletoExt.nombre.trim(),
+                contenido: body.contenido.trim(),
+                costo: body.costo.trim(),            
+                estado: true
 
             });
 
@@ -196,7 +259,6 @@ app.post('/evento', [verificaToken],  async (req, res) => {
     }
 
 });
-
 
 /* ======================= 
 * Actualizar un evento
@@ -253,12 +315,42 @@ app.put('/evento/:cod', [verificaToken],  async (req, res) => {
                 const nomFolletoExt = await getNomArhivoAndExtension(folleto);
 
                 // Se validan las extensiones de los archivos
-                await validarExtension(extensionesValidasImagen, nomImagenExt.ext, res);
-                await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext, res);
+                let resExtImg = await validarExtension(extensionesValidasImagen, nomImagenExt.ext);
+                let resExtFolleto = await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext);
+
+                if(resExtImg !== true){
+
+                    return res.status(400).json({
+                        ok:false,
+                        message: resExtImg
+                    }); 
+
+                }else if(resExtFolleto  !== true){
+
+                    return res.status(400).json({
+                        ok:false,
+                        message: resExtFolleto
+                    }); 
+                }
 
                 //Se envian las imanges a las rutas correspondientes de las carpetas en el servidor
-                await moverArchivo(imagen, nomImagenExt.nombre, res, 'eventos');
-                await moverArchivo(folleto, nomFolletoExt.nombre, res, 'folletos');
+                let resMvImg = await moverArchivo(imagen, nomImagenExt.nombre, 'eventos');
+                let resMvFolleto = await moverArchivo(folleto, nomFolletoExt.nombre, 'folletos');
+
+                if(resMvImg == false){
+
+                    return res.status(500).json({
+                        ok: false,
+                        message: 'Error al guardar la imagen, favor comunicarse con el administrador'
+                    }); 
+
+                }else if(resMvFolleto == false){
+
+                    return res.status(500).json({
+                        ok: false,
+                        message: 'Error al guardar el folleto, favor comunicarse con el administrador'
+                    }); 
+                }
 
                 //Se borra la imagen anterior
                 borrarArchivo(eventoDB.imagen, 'eventos');
@@ -266,7 +358,6 @@ app.put('/evento/:cod', [verificaToken],  async (req, res) => {
                 //Se borra el folleto anterior
                 borrarArchivo(eventoDB.folleto, 'folletos');
 
-               
                 await eventoDB.update({
 
                 	nombre: body.nombre.trim(),
@@ -291,14 +382,29 @@ app.put('/evento/:cod', [verificaToken],  async (req, res) => {
                 const nomFolletoExt = await getNomArhivoAndExtension(folleto);
 
                 // Se validan las extensiones de los archivos
-                await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext, res);
+                let resExtFolleto = await validarExtension(extensionesValidasFolleto, nomFolletoExt.ext);
+                
+                if(resExtFolleto !== true){
+
+                    return res.status(400).json({
+                        ok:false,
+                        message: resExtFolleto
+                    });
+                }
 
                 //Se envian las imanges a las rutas correspondientes de las carpetas en el servidor
-                await moverArchivo(folleto, nomFolletoExt.nombre, res, 'folletos');
+                let resMvFolleto = await moverArchivo(folleto, nomFolletoExt.nombre, 'folletos');
+
+                if(resMvFolleto == false){
+
+                    return res.status(500).json({
+                        ok: false,
+                        message: 'Error al guardar el folleto, favor comunicarse con el administrador'
+                    }); 
+                }
 
                 //Se borra el folleto anterior
                 borrarArchivo(eventoDB.folleto, 'folletos');
-
                
                 await eventoDB.update({
 
@@ -323,10 +429,26 @@ app.put('/evento/:cod', [verificaToken],  async (req, res) => {
                 const nomImagenExt = await getNomArhivoAndExtension(imagen);
 
                 // Se validan las extensiones de los archivos
-                await validarExtension(extensionesValidasImagen, nomImagenExt.ext, res);
+                let resExtImg = await validarExtension(extensionesValidasImagen, nomImagenExt.ext);
+
+                if(resExtImg !== true){
+
+                    return res.status(400).json({
+                        ok:false,
+                        message: resExtImg
+                    });
+                }
 
                 //Se envian las imanges a las rutas correspondientes de las carpetas en el servidor
-                await moverArchivo(imagen, nomImagenExt.nombre, res, 'eventos');
+                let resMvImg = await moverArchivo(imagen, nomImagenExt.nombre, 'eventos');
+
+                if(resMvImg == false){
+
+                    return res.status(500).json({
+                        ok: false,
+                        message: 'Error al guardar el folleto, favor comunicarse con el administrador'
+                    }); 
+                }
 
                 //Se borra la imagen anterior
                 borrarArchivo(eventoDB.imagen, 'eventos');
@@ -343,7 +465,7 @@ app.put('/evento/:cod', [verificaToken],  async (req, res) => {
                     imagen: nomImagenExt.nombre.trim(),
                     estado: body.estado
 
-                });            	
+                });   	
 
             }
 
@@ -411,7 +533,6 @@ app.get('/eventos', [verificaToken],  async (req, res) => {
 
 });
 
-
 /* =============
 * Get evento: devuelve un evento por su codigo correspondiente
 ==============*/
@@ -451,96 +572,6 @@ app.get('/evento/:cod',  async (req, res) => {
         });
     }
 
-
 });
-
-// Devuelve el nombre y la extension de un objeto tipo imagen
-async function getNomArhivoAndExtension(imagen){
-
- 	//extraemos del nombre del archivo la extension que tiene
-    let nombreCortado = imagen.name.split('.');
-    let extension = nombreCortado[nombreCortado.length - 1];
-    let nomArchivo = nombreCortado[nombreCortado.length - 2];
-
-    //Cambiar nombre al archivo
-    let nombreArchivo = `${ nomArchivo }-${ new Date().getMilliseconds() }.${ extension }`;
-
-    let nomArchivoEx = { nombre: nombreArchivo, ext: extension };
-
-    return nomArchivoEx;
-
-}
-/* Permite guardar en una carpeta del servidor la imagen y validar que tenga las extensiones permitidas */
-async function validarExtension(extValidas, extension, res){
-
-	try {
-
-		if(extValidas.indexOf( extension ) < 0){
-         
-            return res.status(400).json({
-                ok:false,
-                message: 'Las extensiones permitidas son: ' + extValidas.join(', ')
-            });      
-
-        }
-
-	} catch(e) {
-
-		return res.status(500).json({
-            ok:false,
-            message: "Error validador de extensiones, favor comunicarse con el administrador"
-        });
-	}
-
-}
-//Envia el archivo a una ruta especifica dentro del servidor
-async function moverArchivo(archivo, nombreArchivo, res, tipo){
-
-    try{
-            
-        await archivo.mv(`../public/uploads/${ tipo }/${ nombreArchivo }`, (err) => {
-                
-            //retorna error cuando no guarda la imagen en el servidor
-            if(err){       
-
-                return res.status(500).json({
-                    ok:false,
-                    message: 'Error al guardar la imagen o el folleto del evento, favor comunicarse con el administrador'
-                });
-
-            }
-
-        });
-
-    } catch(e){
-
-        return res.status(500).json({
-            ok:false,
-            message: "Error interno al mover un archivo, favor comunicarse con el administrador"
-        });
-    }
-
-}
-/* Permite borrar de la carpeta del servidor la imagen por si se presenta algun error inesperado */
-async function borrarArchivo(nombre, tipo){
-
-    try{
-
-        // Validar si el path existe para borrarlo
-        let pathArchivo =  path.resolve(__dirname, `../../public/uploads/${ tipo }/${ nombre }`);
-
-        if( fs.existsSync(pathArchivo) ){
-            fs.unlinkSync(pathArchivo)
-        }
-
-    } catch(e){
-
-        return res.status(500).json({
-            ok:false,
-            e
-        });
-    }
-
-}
 
 module.exports = app;

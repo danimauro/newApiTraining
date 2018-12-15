@@ -1,11 +1,14 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const app = express();
 
 // Middelewares
 const { verificaToken } = require('../middlewares/autentication');
 
+// Funciones de uso general para el manejo de archivos
+const { getNomArhivoAndExtension,
+        validarExtension,
+        moverArchivo,
+        borrarArchivo } = require('../general-functions/managment-files.js');
 
 /*==============
 * Registrar invitado
@@ -18,6 +21,8 @@ app.post('/invitado', [verificaToken], async (req, res) => {
         //Se toman los datos por medio del POST
         let body = req.body;
 
+        //extensiones permitidas
+        const extensionesValidas = ['png','jpg','jpeg'];
 
         if(!req.files){
             return res.status(400).json({
@@ -29,33 +34,26 @@ app.post('/invitado', [verificaToken], async (req, res) => {
         //archivo fisico
         let imagen = req.files.imagen;
 
-        //extensiones permitidas
-        let extensionesValidas = ['png','jpg','jpeg'];
+        // Se envia el objeto imagen y retorna un json con el nombre y la extension de la misma
+        const nomImagenExt = await getNomArhivoAndExtension(imagen);
 
-        /*
-         * Se envia la imagen y las extensiones validas, la funcion guarda la imagen en una carpeta en el servidor
-         * despues de validar que la extensión sea la correcta
-        */
-        const respuesta = await moverImagen(imagen,extensionesValidas);
+        // Se valida que la extension de la imagen cumpla con las extensiones validas
+        let resExt = await validarExtension(extensionesValidas, nomImagenExt.ext);
 
-
-        // La variable respuesta puede contener un false, "error-img" o el nombre de a imagen a guardar
-        // Si la respuessta el false hay un error con la extension
-        if(!respuesta){
+        if(resExt !== true){
             return res.status(400).json({
                 ok:false,
-                message: 'Las extensiones permitidas son' + extensionesValidas.join(', ')
+                message: resExt
             });
         }
 
-        // Si la respuesta es "error-img" quiere decir que se presento un error al guardar la imagen en la carpeta del servidor
-        if(respuesta === "error-img"){
-
+        // Se guarda la imagen en la carpeta del servidor
+        let resMvImg = await moverArchivo(imagen, nomImagenExt.nombre, 'invitados');
+        if(resMvImg == false){
             return res.status(500).json({
-                ok:false,
+                ok: false,
                 message: 'Error al guardar la imágen, favor comunicarse con el administrador'
             });
-
         }
         
         // Continua para guardar la  organización
@@ -65,8 +63,7 @@ app.post('/invitado', [verificaToken], async (req, res) => {
             apellido: body.apellido.trim(),
             email: body.email.trim(),
             perfil: body.perfil.trim(),
-            // Recuerde que la variable respueta trae el nombre de la imagen
-            imagen: respuesta.trim(),
+            imagen: nomImagenExt.nombre.trim(),
             estado: true
 
         });
@@ -139,21 +136,24 @@ app.put('/invitado/:cod', [verificaToken], async (req, res) => {
 
     try{
 
+         //Se toman los datos por medio del POST
         let body = req.body;
 
+        // Despues de algunas validaciones se traen los datos de la dependencia
         const invitadoDB = await require('../models').Invitado.findOne({
             where: { cod: req.params.cod }
         });
 
         if(!invitadoDB){
-
             return res.status(400).json({
                 ok: false,
                 message: 'Invitado no encontrado'
             });
-
         }
-            
+    
+        //extensiones permitidas
+        const extensionesValidas = ['png','jpg','jpeg']
+
         if(!req.files){
 
             await invitadoDB.update({
@@ -161,7 +161,8 @@ app.put('/invitado/:cod', [verificaToken], async (req, res) => {
                 nombre: body.nombre.trim(),
                 apellido: body.apellido.trim(),
                 perfil: body.perfil.trim(),
-                email: body.email.trim()
+                email: body.email.trim(),
+                estado: body.estado
 
             });
 
@@ -172,37 +173,39 @@ app.put('/invitado/:cod', [verificaToken], async (req, res) => {
 
         }else{
 
-                //archivo físico
+                //archivo fisico
                 let imagen = req.files.imagen;
 
-                //extensiones permitidas
-                let extensionesValidas = ['png','jpg','jpeg'];
+                // Se envia el objeto imagen y retorna un json con el nombre y la extension de la misma
+                const nomImagenExt = await getNomArhivoAndExtension(imagen);
 
-                const respuesta = await moverImagen(imagen,extensionesValidas);
+                // Se valida que la extension de la imagen cumpla con las extensiones validas
+                let resExt = await validarExtension(extensionesValidas, nomImagenExt.ext);
 
-                // La variable respuesta puede contener un false, "error-img" o el nombre de a imagen a guardar
-                // Si la respuessta el false hay un error con la extension
-                if(!respuesta){
+                if(resExt !== true){
                     return res.status(400).json({
                         ok:false,
-                        message: 'Las extensiones permitidas son: ' + extensionesValidas.join(', ')
+                        message: resExt
                     });
                 }
 
-                // Si la respuesta es "error-img" quiere decir que se presento un error al guardar la imagen en la carpeta del servidor
-                if(respuesta === "error-img"){
-
+                // Se guarda la imagen en la carpeta del servidor
+                let resMvImg = await moverArchivo(imagen, nomImagenExt.nombre, 'invitados');
+                if(resMvImg == false){
                     return res.status(500).json({
-                        ok:false,
+                        ok: false,
                         message: 'Error al guardar la imágen, favor comunicarse con el administrador'
                     });
-
                 }
 
-                let pathImagen =  path.resolve(__dirname, `../../public/uploads/invitados/${ invitadoDB.imagen }`);
+                //Se borra la imagen anterior
+                borrarArchivo(invitadoDB.imagen, 'invitados');
 
-                if( fs.existsSync(pathImagen) ){
-                    fs.unlinkSync(pathImagen)
+                if(resMvImg == false){
+                    return res.status(500).json({
+                        ok: false,
+                        message: 'Error al guardar la imágen, favor comunicarse con el administrador'
+                    });
                 }
 
                 await invitadoDB.update({
@@ -211,7 +214,8 @@ app.put('/invitado/:cod', [verificaToken], async (req, res) => {
                     apellido: body.apellido.trim(),
                     perfil: body.perfil.trim(),
                     email: body.email.trim(),
-                    imagen: respuesta
+                    imagen: nomImagenExt.nombre.trim(),
+                    estado: body.estado
 
                 });
 
@@ -237,7 +241,6 @@ app.put('/invitado/:cod', [verificaToken], async (req, res) => {
 ================*/
 
 app.get('/invitado/:cod',  async (req, res) => {
-
     
     try{
 
@@ -273,52 +276,5 @@ app.get('/invitado/:cod',  async (req, res) => {
     }
 
 });
-
-/* Permite guardar en una carpeta del servidor la imagen y validar que tenga las extensiones permitidas */
-
-async function moverImagen(imagen, extensionesValidas){
-
-    try{
-
-        //extraemos del nombre del archivo la extension que tiene
-        let nombreCortado = imagen.name.split('.');
-        let extension = nombreCortado[nombreCortado.length - 1];
-        let nomImagen = nombreCortado[nombreCortado.length - 2];
-
-
-        //se valida la extension de la imagen con las permitidas por el sistema
-        if(extensionesValidas.indexOf( extension ) < 0){
-
-            //retorna false cuando detecta que la extension de la imagen no es la permitida
-            return false;            
-
-        }else{            
-
-            //Cambiar nombre al archivo
-            let nombreImagen = `${ nomImagen }-${ new Date().getMilliseconds() }.${ extension }`;
-            
-            await imagen.mv(`public/uploads/invitados/${nombreImagen}`, (err) => {
-                
-                //retorna error cuando no guarda la imagen en el servidor
-                if(err){                    
-                    return 'error-img';
-                }
-
-            });
-
-            return nombreImagen;
-
-        }
-
-
-    } catch(e){
-
-        return res.status(500).json({
-            ok: false,
-            message: e
-        });
-    }
-
-}
 
 module.exports = app;
