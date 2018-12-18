@@ -62,14 +62,14 @@ app.get('/eventos-dep/:depId', async (req, res) => {
             include:[{ 
                 model: require('../models').Evento,
                 as: 'depEvento',
-                attributes: ['cod', 'nombre', 'descrip', 'imagen', 'fecinicio', 'fecfin', 'contenido', 'costo', 'folleto'],                
+                attributes: ['cod', 'nombre', 'descrip', 'imagen', 'fecinicio', 'fecfin', 'contenido', 'costo', 'folleto', 'estado'],                
                 through: { 
                     attributes: { exclude: ['fecregistro', 'estado', 'createdAt', 'updatedAt', 'eventoId', 'depId'] },
                     where: { estado: true } 
                 }
                 
             }],
-            attributes: ['cod','nombre', 'descrip', 'imagen'],
+            attributes: ['cod','nombre', 'descrip', 'imagen', 'estado'],
             where: { cod: req.params.depId }
             
         });
