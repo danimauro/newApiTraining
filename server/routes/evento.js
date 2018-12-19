@@ -1,5 +1,9 @@
 const express = require('express');
 const app = express();
+const fs = require('fs');
+const path = require('path');
+const nodemailer = require('nodemailer'); 
+const handlebars = require('handlebars');
 
 //middelewares
 const { verificaToken } = require('../middlewares/autentication');
@@ -562,6 +566,152 @@ app.get('/evento/:cod',  async (req, res) => {
         return res.status(200).json({
             ok:true,
             eventoDB
+        });
+
+    }catch(e){
+
+        return res.status(500).json({
+            ok:false,
+            e
+        });
+    }
+
+});
+
+
+
+/* =============
+* get: Envia un correo electrónico con los datos de un usuario que esta solicitando infomación de un evento a la organización que lo publico
+==============*/
+
+app.post('/request-info/:codEvento',  async (req, res) => {
+
+    try{
+
+        //Se toman los datos por medio del POST
+        let body = req.body;
+
+        // Se consulta la dependencia a la que pertenece el evento codigo que envia el usuario
+        const codDepen = await require('../models').Dependencia.findAll({
+            include:[{ 
+                model: require('../models').Evento,
+                as: 'depEvento',
+                through: { 
+                    attributes: { exclude: ['fecregistro', 'estado', 'createdAt', 'updatedAt', 'eventoId', 'depId'] },
+                    where: { eventoId: req.params.codEvento, estado: true } 
+                },
+                attributes: { exclude: [ 'cod', 'nombre', 'descrip', 'contenido', 'imagen', 'costo', 'estado', 'folleto', 'fecinicio', 'fecfin', 'invitadoId', 'createdAt', 'updatedAt', 'depId'] },
+                where: { cod: req.params.codEvento, estado: true }
+            }],
+            attributes: ['cod'],
+            where: { estado: true }
+        });
+
+        // Si devuelve un arreglo sin datos se retorna un mensaje de error
+        if(!codDepen){
+            return res.status(400).json({
+                ok:false,
+                message: 'Error al enviar el su solicitud, favor comunicarse con el administrador del sistema'
+            }); 
+        }
+
+        // Si consulta por medio de la dependencia que se ubico anteriormente la organizacion a la cual pertenece para traer el dato del correo electrónico
+        const organizacionDB = await require('../models').Organizacion.findAll({
+
+            include:[{
+                model: require('../models').Dependencia,
+                as: 'organiDep',
+                through: { 
+                    attributes: { exclude: ['orgaId', 'depId', 'fecregistro', 'updatedAt', 'createdAt', 'estado'] },
+                    where: { depId: codDepen[0].cod, estado: true } 
+                },
+                attributes: { exclude: [ 'cod', 'nombre', 'descrip', 'contenido', 'imagen', 'estado', 'createdAt', 'updatedAt'] },
+                where: { cod: codDepen[0].cod, estado: true }
+            }],
+            attributes: ['email'],
+            where: { estado: true }
+
+        });
+
+        // Si devuelve un arreglo sin datos se retorna un mensaje de error
+        if(!organizacionDB){
+            return res.status(400).json({
+                ok:false,
+                message: 'Error al enviar el su solicitud, favor comunicarse con el administrador del sistema'
+            }); 
+        }
+
+        // Se lee un documento html donde se rendirizaran los datos que se enviaran por correo electrónico
+        let readHTMLFile = function(path, callback) {
+
+            fs.readFile(path, {encoding: 'utf-8'}, function (err, html) {
+                if (err) {
+                    throw err;
+                    callback(err);
+                }
+                else {
+                    callback(null, html);
+                }
+            });
+
+        };
+
+        // Se reemplazan los elementos que desea cambiar en la cadena html usando handlebars
+        readHTMLFile(path.resolve(__dirname, `../templates/email/request-info.html`), (err, html) => {
+
+            // se llama el template
+            let template = handlebars.compile(html);
+
+            // se crea un objeto con los datos para la template
+            let replacements = {
+                nombre: body.nombre,
+                apellido: body.apellido,
+                tel: body.tel,
+                email: body.email,
+                mensaje: body.mensaje,
+                nomEvento: body.nomEvento
+            };
+
+            // se renderiza el template con los datos del objeto anterior
+            let htmlToSend = template(replacements);
+
+            // Se crea un objeto transporter con los datos del correo principal
+            const transporter = nodemailer.createTransport({
+
+                service: 'Gmail',
+                    auth: {
+                        user: process.env.EMAIL,
+                        pass: process.env.PASSWORD
+                    }
+            });
+
+            // Se definen los datos del correo destino y el asunto correspondiente
+            let mailOptions = {
+                to: 'dmgutierrez7@misena.edu.co',
+                subject: 'Solicitud de información',
+                html : htmlToSend
+            };
+
+            //se envia el correo electrónico
+            transporter.sendMail(mailOptions, (error) => {
+
+                if (error){
+
+                return res.status(500).json({
+                    ok:false,
+                    message: error
+                }); 
+
+                } else {
+
+                    return res.status(200).json({
+                        ok:true,
+                        message: 'El mensaje se envió correctamente.'
+                    });
+
+                }
+            });
+
         });
 
     }catch(e){

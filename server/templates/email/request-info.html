@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta name="viewport" content="width=device-width">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <title>Solicitud de información</title>
+    </head>
+    <body style="font-family: 'Roboto', sans-serif;">
+
+        <h3 style="text-align: center;">Hola! Trainingcc te informa que tienes un(a) estudiante interesado(a) en el programa {{ nomEvento }}</h3>
+
+        <br>
+
+        <ul style="list-style: none;">
+            <li><strong>Programa de interes: </strong> {{ nomEvento }} </li>
+            <br>
+            <li><strong>Estudiante: </strong> {{ nombre }} {{ apellido }}</li>
+            <li><strong>Teléfono: </strong> {{ tel }} </li>
+            <li><strong>Correo: </strong> {{ email }}</li>
+            <br>
+            <li><strong>Mensaje: </strong> {{ mensaje }}</li>
+        </ul>
+        <br>
+        <h3 style="text-align: center;">Recuerde que este es un mensaje automatico, para comunicarse con el interesado NO reenvíe este correo. Gracias</h3>
+        <br>
+        <a href="http://www.trainingcc.org" style="text-align: center;">Servicio Trainingcc.org</a>
+    </body>
+</html>
