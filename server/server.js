@@ -3,7 +3,7 @@ const app = express();
 const path = require('path');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
-
+const cors = require('./config/cors.js');
 //Variables de entorno o configuraciones globales
 require('./config/private-configuration');
 
@@ -12,6 +12,9 @@ app.use(express.static(path.resolve(__dirname, '../public')));
 
 //default options
 app.use(fileUpload());
+
+//CORS
+app.use(cors.permisos);
 
 
 //parse aplication /x-www-form-urlencoded
