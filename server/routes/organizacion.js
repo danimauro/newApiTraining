@@ -197,7 +197,9 @@ app.put('/organizacion/:cod', [verificaToken], async (req, res) => {
 
             await organiDB.update({
                 nombre: body.nombre.trim(),
-                descrip: body.descrip.trim()
+                descrip: body.descrip.trim(),
+                email: body.email.trim(),
+                tel: body.tel.trim()
             });
 
             return res.status(201).json({

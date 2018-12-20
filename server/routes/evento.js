@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path');
+
 const nodemailer = require('nodemailer'); 
 const handlebars = require('handlebars');
 
@@ -687,7 +688,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
 
             // Se definen los datos del correo destino y el asunto correspondiente
             let mailOptions = {
-                to: 'dmgutierrez7@misena.edu.co',
+                to: organizacionDB[0].email,
                 subject: 'Solicitud de información',
                 html : htmlToSend
             };
