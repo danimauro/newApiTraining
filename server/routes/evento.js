@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const nodemailer = require('nodemailer'); 
+const smtpTransport = require('nodemailer-smtp-transport');
 const handlebars = require('handlebars');
 
 //middelewares
