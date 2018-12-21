@@ -587,17 +587,7 @@ app.get('/evento/:cod',  async (req, res) => {
 
 app.post('/request-info/:codEvento',  async (req, res) => {
 
-    //Se toman los datos por medio del POST
-    let body = req.body;
-
-    return res.status(200).json({
-        ok:true,
-        message: body,
-        cod: req.params.codEvento
-    }); 
-
-
-    /*try{
+    try{
 
         //Se toman los datos por medio del POST
         let body = req.body;
@@ -687,17 +677,19 @@ app.post('/request-info/:codEvento',  async (req, res) => {
             let htmlToSend = template(replacements);
 
             // Se crea un objeto transporter con los datos del correo principal
-            const transporter = nodemailer.createTransport({
+            const transporter = nodemailer.createTransport(smtpTransport({
 
-                service: 'Gmail',
-                    auth: {
-                        user: process.env.EMAIL,
-                        pass: process.env.PASSWORD
-                    }
-            });
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD
+                }
+            }));
 
             // Se definen los datos del correo destino y el asunto correspondiente
             let mailOptions = {
+                from: process.env.EMAIL,
                 to: organizacionDB[0].email,
                 subject: 'Solicitud de información',
                 html : htmlToSend
@@ -705,14 +697,14 @@ app.post('/request-info/:codEvento',  async (req, res) => {
 
 
             //se envia el correo electrónico
-            transporter.sendMail(mailOptions, (error) => {
+            transporter.sendMail(mailOptions, (error,info) => {
 
                 if (error){
 
-                return res.status(500).json({
-                    ok:false,
-                    message: error
-                }); 
+                    return res.status(500).json({
+                        ok:false,
+                        message: error
+                    }); 
 
                 } else {
 
@@ -732,7 +724,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
             ok:false,
             e
         });
-    }*/
+    }
 
 });
 
