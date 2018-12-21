@@ -587,7 +587,17 @@ app.get('/evento/:cod',  async (req, res) => {
 
 app.post('/request-info/:codEvento',  async (req, res) => {
 
-    try{
+    //Se toman los datos por medio del POST
+    let body = req.body;
+
+    return res.status(200).json({
+        ok:true,
+        message: body,
+        cod: req.params.codEvento
+    }); 
+
+
+    /*try{
 
         //Se toman los datos por medio del POST
         let body = req.body;
@@ -694,16 +704,8 @@ app.post('/request-info/:codEvento',  async (req, res) => {
             };
 
 
-            return res.status(200).json({
-                ok:true,
-                message: 'ENTRO AL CORREO',
-                correo: organizacionDB[0].email
-            }); 
-
-
-
             //se envia el correo electrónico
-            /*transporter.sendMail(mailOptions, (error) => {
+            transporter.sendMail(mailOptions, (error) => {
 
                 if (error){
 
@@ -720,7 +722,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
                     });
 
                 }
-            });*/
+            });
 
         });
 
@@ -730,7 +732,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
             ok:false,
             e
         });
-    }
+    }*/
 
 });
 
