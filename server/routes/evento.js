@@ -693,8 +693,17 @@ app.post('/request-info/:codEvento',  async (req, res) => {
                 html : htmlToSend
             };
 
+
+            return res.status(200).json({
+                ok:true,
+                message: 'ENTRO AL CORREO',
+                correo: organizacionDB[0].email
+            }); 
+
+
+
             //se envia el correo electrónico
-            transporter.sendMail(mailOptions, (error) => {
+            /*transporter.sendMail(mailOptions, (error) => {
 
                 if (error){
 
@@ -711,7 +720,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
                     });
 
                 }
-            });
+            });*/
 
         });
 
