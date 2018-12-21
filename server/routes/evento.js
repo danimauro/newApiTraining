@@ -682,13 +682,12 @@ app.post('/request-info/:codEvento',  async (req, res) => {
 
                 service: 'gmail',
                 host: 'smtp.gmail.com',
-                port: 567,
+                port: 465,
                 auth: {
                     user: process.env.EMAIL,
                     pass: process.env.PASSWORD
                 },
-                tls: { rejectUnauthorized:true },
-                debug:true
+                tls: { rejectUnauthorized:false }
             }));
 
             // Se definen los datos del correo destino y el asunto correspondiente
