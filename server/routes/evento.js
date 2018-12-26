@@ -686,6 +686,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
                 host: 'smtp.gmail.com',
                 port: 465,
                 secure: true, 
+                tls: {rejectUnauthorized: false},
                 auth: {
                     user: process.env.EMAIL,
                     pass: process.env.PASSWORD
@@ -708,7 +709,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
 
                     return res.status(500).json({
                         ok:false,
-                        message: error
+                        message: 'Error intero: '+error
                     }); 
 
                 } else {
