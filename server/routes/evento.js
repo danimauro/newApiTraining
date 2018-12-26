@@ -685,7 +685,6 @@ app.post('/request-info/:codEvento',  async (req, res) => {
                 service: 'gmail',
                 host: 'smtp.gmail.com',
                 port: 465,
-                secure: true, 
                 tls: {rejectUnauthorized: false},
                 auth: {
                     user: process.env.EMAIL,
