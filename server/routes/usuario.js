@@ -162,14 +162,17 @@ app.post('/contactenos', async (req, res) => {
             // Se crea un objeto transporter con los datos del correo principal
             const transporter = nodemailer.createTransport({
 
-                service: 'Gmail',
-                    auth: {
-                        user: process.env.EMAIL,
-                        pass: process.env.PASSWORD
-                    }
+                service: 'gmail',
+                host: 'smtp.gmail.com',
+                port: 465,
+                secure: true, 
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD
+                }
             });
 
-            // Se definen los datos del correo destino y el asunto correspondiente
+            // Se definen los datos del correo destino y el asunto correspondiente ejeplo: gerencia
             let mailOptions = {
                 to: 'dmgutierrez7@misena.edu.co',
                 subject: 'Tienes es mensaje',

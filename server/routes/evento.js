@@ -588,7 +588,7 @@ app.get('/evento/:cod',  async (req, res) => {
 
 app.post('/request-info/:codEvento',  async (req, res) => {
 
-    try{
+
 
         //Se toman los datos por medio del POST
         let body = req.body;
@@ -608,6 +608,8 @@ app.post('/request-info/:codEvento',  async (req, res) => {
             attributes: ['cod'],
             where: { estado: true }
         });
+
+        console.log(codDepen);
 
         // Si devuelve un arreglo sin datos se retorna un mensaje de error
         if(!codDepen){
@@ -683,11 +685,11 @@ app.post('/request-info/:codEvento',  async (req, res) => {
                 service: 'gmail',
                 host: 'smtp.gmail.com',
                 port: 465,
+                secure: true, 
                 auth: {
                     user: process.env.EMAIL,
                     pass: process.env.PASSWORD
-                },
-                tls: { rejectUnauthorized:false }
+                }
             }));
 
             // Se definen los datos del correo destino y el asunto correspondiente
@@ -721,13 +723,7 @@ app.post('/request-info/:codEvento',  async (req, res) => {
 
         });
 
-    }catch(e){
 
-        return res.status(500).json({
-            ok:false,
-            e
-        });
-    }
 
 });
 
